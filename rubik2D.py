@@ -5,6 +5,7 @@ Name of the author(s):
 import time
 import sys
 from search import *
+import collections
 
 
 #################
@@ -13,63 +14,57 @@ from search import *
 class Rubik2D(Problem):
 
     def actions(self, state):
-        next_actions = []
-
         for i in range(0, state.shape[0]):
-            action = ("go_right", i)
-            next_actions.append(action)
+            for j in range(1, state.shape[1]):
+                action = ("go_right", i, j)
+                yield action
 
         for i in range(0, state.shape[1]):
-            action = ("go_down", i)
-            next_actions.append(action)
-
-        return next_actions
+            for j in range(1, state.shape[0]):
+                action = ("go_down", i, j)
+                yield action
 
     def result(self, state, action):
-        # print("def result(self, state, action):")
-        # return State(state.shape, state.answer, state.answer, move="OK")
 
         if action[0] == "go_right":
             grid = list(state.grid)
             row_id = action[1]
-            row = list(state.grid[row_id])
-            row_len = state.shape[0]
-            last = row[row_len-1]
+            step = action[2]
 
-            for i in range(row_len-1, -1, -1):
-                row[i] = row[i-1]
-            row[0] = last
+            row = collections.deque(state.grid[row_id])
+            row.rotate(step)
 
             grid[row_id] = tuple(row)
 
             new_state = State(state.shape, tuple(
-                grid), state.answer, move=f"Row {row_id} -> go_right")
+                grid), move=f"Row #{row_id} right {step}")
 
             return new_state
 
         elif action[0] == "go_down":
             grid = list(state.grid)
             column_id = action[1]
-            column_len = state.shape[1]
+            step = action[2]
 
-            last = grid[column_len-1][column_id]
+            column = collections.deque()
 
-            for i in range(column_len-1, -1, -1):
-                grid[i] = list(grid[i])
-                grid[i][column_id] = grid[i-1][column_id]
-                grid[i] = tuple(grid[i])
+            for i in range(0, state.shape[1]):
+                column.append(grid[i][column_id])
 
-            grid[0] = list(grid[0])
-            grid[0][column_id] = last
-            grid[0] = tuple(grid[0])
+            column.rotate(step)
+
+            for i in range(0, state.shape[1]):
+                row = list(grid[i])
+                row[column_id] = column[i]
+                grid[i] = tuple(row)
 
             new_state = State(state.shape, tuple(
-                grid), state.answer, move=f"Column {column_id} -> go_down")
+                grid), move=f"Col #{column_id} down {step}")
 
             return new_state
 
     def goal_test(self, state):
-        return state.grid == state.answer
+        return state.grid == self.goal
 
 
 ###############
@@ -77,9 +72,8 @@ class Rubik2D(Problem):
 ###############
 class State:
 
-    def __init__(self, shape, grid, answer=None, move="Init"):
+    def __init__(self, shape, grid, move="Init"):
         self.shape = shape
-        self.answer = answer
         self.grid = grid
         self.move = move
 
@@ -114,12 +108,12 @@ def main():
 
     shape, initial_grid, goal_grid = read_instance_file(filepath)
 
-    init_state = State(shape, tuple(initial_grid), tuple(goal_grid), "Init")
-    problem = Rubik2D(init_state)
+    init_state = State(shape, tuple(initial_grid), "Init")
+    problem = Rubik2D(init_state, tuple(goal_grid))
 
     # Example of search
     start_timer = time.perf_counter()
-    node, nb_explored, remaining_nodes = breadth_first_graph_search(problem)
+    node, nb_explored, remaining_nodes = depth_limited_search(problem)
     end_timer = time.perf_counter()
 
     # Example of print
