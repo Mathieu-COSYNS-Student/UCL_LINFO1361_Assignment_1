@@ -13,13 +13,57 @@ from search import *
 class Rubik2D(Problem):
 
     def actions(self, state):
-        pass
+        next_actions = []
+
+        for i in range(0, state.shape[0]):
+            next_actions.append(
+                ("go_right", i)
+            )
+
+        for i in range(0, state.shape[1]):
+            next_actions.append(
+                ("go_down", i)
+            )
+
+        return next_actions
 
     def result(self, state, action):
-        pass
+
+        if action[0] == "go_right":
+            grid = list(state.grid)
+            row_id = action[1]
+            row = list(state.grid[row_id])
+            row_len = state.shape[0]
+            last = row[row_len-1]
+
+            for i in range(row_len-1, -1, -1):
+                row[i] = row[i-1]
+            row[0] = last
+
+            grid[row_id] = tuple(row)
+
+            return State(state.shape, tuple(grid), state.answer, move="go_right")
+
+        elif action[0] == "go_down":
+            grid = list(state.grid)
+            column_id = action[1]
+            column_len = state.shape[1]
+
+            last = grid[column_len-1][column_id]
+
+            for i in range(column_len-1, -1, -1):
+                grid[i] = list(grid[i])
+                grid[i][column_id] = grid[i][column_id-1]
+                grid[i] = tuple(grid[i])
+
+            grid[0] = list(grid[0])
+            grid[0][column_id] = last
+            grid[0] = tuple(grid[0])
+
+            return State(state.shape, tuple(grid), state.answer, move="go_down")
 
     def goal_test(self, state):
-        pass
+        return state.grid == state.answer
 
 
 ###############
@@ -56,9 +100,10 @@ def read_instance_file(filepath):
     return (shape_x, shape_y), initial_grid, goal_grid
 
 
-if __name__ == "__main__":
+def main():
     if len(sys.argv) != 2:
-        print(f"Usage: ./rubik2D.py <path_to_instance_file>")
+        print(f"Usage: ./rubik2D.py <path_to_instance_file>", file=sys.stderr)
+        return
     filepath = sys.argv[1]
 
     shape, initial_grid, goal_grid = read_instance_file(filepath)
@@ -68,7 +113,7 @@ if __name__ == "__main__":
 
     # Example of search
     start_timer = time.perf_counter()
-    node, nb_explored, remaining_nodes = breadth_first_tree_search(problem)
+    node, nb_explored, remaining_nodes = breadth_first_graph_search(problem)
     end_timer = time.perf_counter()
 
     # Example of print
@@ -82,3 +127,7 @@ if __name__ == "__main__":
     print("* Path cost to goal:\t", node.depth, "moves")
     print("* #Nodes explored:\t", nb_explored)
     print("* Queue size at goal:\t",  remaining_nodes)
+
+
+if __name__ == "__main__":
+    main()
