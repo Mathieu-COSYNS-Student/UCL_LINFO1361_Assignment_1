@@ -13,15 +13,15 @@ FILES=(
     'instances/b05'
 )
 
-FILES=(
-    'instances/a01'
-)
+# FILES=(
+#     'instances/a01'
+# )
 
 for i in "${FILES[@]}"; do
     echo "-----------------------------------------"
     echo "$i"
     echo "-----------------------------------------"
-    timeout 45s python rubik2D.py "$i" || echo "Timeout"
+    timeout 180s python rubik2D.py "$i" || echo "Timeout"
     echo "-----------------------------------------"
     echo ""
 done

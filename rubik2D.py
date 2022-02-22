@@ -16,18 +16,18 @@ class Rubik2D(Problem):
         next_actions = []
 
         for i in range(0, state.shape[0]):
-            next_actions.append(
-                ("go_right", i)
-            )
+            action = ("go_right", i)
+            next_actions.append(action)
 
         for i in range(0, state.shape[1]):
-            next_actions.append(
-                ("go_down", i)
-            )
+            action = ("go_down", i)
+            next_actions.append(action)
 
         return next_actions
 
     def result(self, state, action):
+        # print("def result(self, state, action):")
+        # return State(state.shape, state.answer, state.answer, move="OK")
 
         if action[0] == "go_right":
             grid = list(state.grid)
@@ -42,7 +42,10 @@ class Rubik2D(Problem):
 
             grid[row_id] = tuple(row)
 
-            return State(state.shape, tuple(grid), state.answer, move="go_right")
+            new_state = State(state.shape, tuple(
+                grid), state.answer, move=f"Row {row_id} -> go_right")
+
+            return new_state
 
         elif action[0] == "go_down":
             grid = list(state.grid)
@@ -53,14 +56,17 @@ class Rubik2D(Problem):
 
             for i in range(column_len-1, -1, -1):
                 grid[i] = list(grid[i])
-                grid[i][column_id] = grid[i][column_id-1]
+                grid[i][column_id] = grid[i-1][column_id]
                 grid[i] = tuple(grid[i])
 
             grid[0] = list(grid[0])
             grid[0][column_id] = last
             grid[0] = tuple(grid[0])
 
-            return State(state.shape, tuple(grid), state.answer, move="go_down")
+            new_state = State(state.shape, tuple(
+                grid), state.answer, move=f"Column {column_id} -> go_down")
+
+            return new_state
 
     def goal_test(self, state):
         return state.grid == state.answer
