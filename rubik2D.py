@@ -80,12 +80,20 @@ class Rubik2D(Problem):
 ###############
 class State:
 
-    def __init__(self, shape, grid, move="Init"):
+    def __init__(self, shape, grid, move="Init") -> None:
         self.shape = shape
         self.grid = grid
         self.move = move
 
-    def __str__(self):
+    def __hash__(self) -> int:
+        return hash(self.grid)
+
+    def __eq__(self, other: object) -> bool:
+        if type(other) is type(self):
+            return self.grid == other.grid
+        return False
+
+    def __str__(self) -> str:
         s = self.move + "\n"
         for line in self.grid:
             s += "".join(line) + "\n"
@@ -121,7 +129,7 @@ def main():
 
     # Example of search
     start_timer = time.perf_counter()
-    node, nb_explored, remaining_nodes = breadth_first_graph_search(problem)
+    node, nb_explored, remaining_nodes = depth_first_graph_search(problem)
     end_timer = time.perf_counter()
 
     # Example of print
@@ -129,7 +137,8 @@ def main():
 
     for n in path:
         # assuming that the __str__ function of state outputs the correct format
-        print(n.state)
+        # print(n.state)
+        pass
 
     print("* Execution time:\t", str(end_timer - start_timer))
     print("* Path cost to goal:\t", node.depth, "moves")

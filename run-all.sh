@@ -14,7 +14,7 @@ FILES=(
 )
 
 # FILES=(
-#     'instances/a01'
+#    'instances/b05'
 # )
 
 for i in "${FILES[@]}"; do
