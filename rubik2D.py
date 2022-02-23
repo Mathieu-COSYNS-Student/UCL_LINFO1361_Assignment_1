@@ -14,15 +14,23 @@ import collections
 class Rubik2D(Problem):
 
     def actions(self, state):
+        new_states = [state]
+
         for i in range(0, state.shape[0]):
             for j in range(1, state.shape[1]):
                 action = ("go_right", i, j)
-                yield action
+                result = self.result(state, action)
+                if result not in new_states:
+                    new_states.append(result)
+                    yield action
 
         for i in range(0, state.shape[1]):
             for j in range(1, state.shape[0]):
                 action = ("go_down", i, j)
-                yield action
+                result = self.result(state, action)
+                if result not in new_states:
+                    new_states.append(result)
+                    yield action
 
     def result(self, state, action):
 
@@ -48,12 +56,12 @@ class Rubik2D(Problem):
 
             column = collections.deque()
 
-            for i in range(0, state.shape[1]):
+            for i in range(0, state.shape[0]):
                 column.append(grid[i][column_id])
 
             column.rotate(step)
 
-            for i in range(0, state.shape[1]):
+            for i in range(0, state.shape[0]):
                 row = list(grid[i])
                 row[column_id] = column[i]
                 grid[i] = tuple(row)
@@ -113,7 +121,7 @@ def main():
 
     # Example of search
     start_timer = time.perf_counter()
-    node, nb_explored, remaining_nodes = depth_limited_search(problem)
+    node, nb_explored, remaining_nodes = breadth_first_graph_search(problem)
     end_timer = time.perf_counter()
 
     # Example of print
